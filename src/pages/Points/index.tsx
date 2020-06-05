@@ -80,7 +80,7 @@ const Points = ({ navigation, route }) => {
       .then((response) => {
         setPoints(response.data);
       });
-  }, []);
+  }, [selectedItems]);
 
   function selectItem(id) {
     let items;
