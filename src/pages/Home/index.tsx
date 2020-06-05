@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Feather as Icon } from "@expo/vector-icons";
 import {
   View,
@@ -9,7 +9,40 @@ import {
 } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import styles from "./styles";
+import RNPickerSelect from "react-native-picker-select";
+import axios from "axios";
+
+interface UF {
+  sigla: string;
+}
 const Home: React.FC = ({ navigation }) => {
+  const [ufs, setUfs] = useState<UF[]>([]);
+  const [cities, setCities] = useState<String[]>([]);
+  const [selectedCity, setSelectedCity] = useState<String[]>([]);
+  const [selectedUf, setSelectedUf] = useState<String>("");
+
+  console.log(cities);
+
+  useEffect(() => {
+    axios
+      .get("https://servicodados.ibge.gov.br/api/v1/localidades/estados")
+      .then((response) => {
+        const ufsResponse = response.data.map((uf) => uf.sigla);
+        setUfs(ufsResponse);
+      });
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`
+      )
+      .then((response) => {
+        const citiesResponse = response.data.map((city) => city.nome);
+        setCities(citiesResponse);
+      });
+  }, [selectedUf]);
+
   return (
     <ImageBackground
       source={require("../../assets/home-background.png")}
@@ -24,10 +57,26 @@ const Home: React.FC = ({ navigation }) => {
         </Text>
       </View>
       <View style={styles.footer}>
+        <RNPickerSelect
+          onValueChange={(value) => setSelectedUf(value)}
+          items={ufs.map((uf) => ({ label: uf, value: uf }))}
+          placeholder={{ label: "Selecione uma UF" }}
+        />
+        <View style={{ marginVertical: 15 }}>
+          <RNPickerSelect
+            onValueChange={(value) => setSelectedCity(value)}
+            items={cities.map((city) => ({ label: city, value: city }))}
+            placeholder={{ label: "Selecione uma cidade" }}
+          />
+        </View>
+
         <RectButton
           style={styles.button}
           onPress={() => {
-            navigation.navigate("points");
+            navigation.navigate("points", {
+              city: selectedCity,
+              uf: selectedUf,
+            });
           }}
         >
           <View style={styles.buttonIcon}>

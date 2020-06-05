@@ -33,7 +33,8 @@ interface Point {
   longitude: number;
 }
 
-const Points = ({ navigation }) => {
+const Points = ({ navigation, route }) => {
+  const { uf, city } = route.params;
   const [items, setItems] = useState<Item[]>([]);
   const [points, setPoints] = useState<Point[]>([]);
   const [selectedItems, setSelectedItems] = useState<Number[]>([]);
@@ -71,9 +72,9 @@ const Points = ({ navigation }) => {
     api
       .get("points", {
         params: {
-          city: "Gama",
-          uf: "df",
-          items: [1, 3],
+          city,
+          uf,
+          items: selectedItems,
         },
       })
       .then((response) => {
