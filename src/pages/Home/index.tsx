@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import styles from "./styles";
-const Home: React.FC = () => {
+const Home: React.FC = ({ navigation }) => {
   return (
     <ImageBackground
       source={require("../../assets/home-background.png")}
@@ -24,7 +24,12 @@ const Home: React.FC = () => {
         </Text>
       </View>
       <View style={styles.footer}>
-        <RectButton style={styles.button} onPress={() => {}}>
+        <RectButton
+          style={styles.button}
+          onPress={() => {
+            navigation.navigate("points");
+          }}
+        >
           <View style={styles.buttonIcon}>
             <Icon name="arrow-right" color="#fff" size={24} />
           </View>
