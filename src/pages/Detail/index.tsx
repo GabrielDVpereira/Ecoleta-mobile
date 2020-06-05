@@ -1,42 +1,91 @@
-import React from "react";
-import { View, TouchableOpacity, Image, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, TouchableOpacity, Image, Text, Linking } from "react-native";
 import styles from "./styles";
 import { Feather as Icon, FontAwesome } from "@expo/vector-icons";
 import { RectButton } from "react-native-gesture-handler";
+import * as MailComposer from "expo-mail-composer";
+import api from "../../services/api";
 
-const Detail = ({ navigation }) => (
-  <>
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={20} color="#34cb79" />
-      </TouchableOpacity>
+export interface Point {
+  id: number;
+  image: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  city: string;
+  uf: string;
+  latitude: number;
+  longitude: number;
+}
 
-      <Image
-        style={styles.pointImage}
-        source={{
-          uri:
-            "https://images.unsplash.com/photo-1569180880150-df4eed93c90b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80",
-        }}
-      />
+export interface Item {
+  title: string;
+}
 
-      <Text style={styles.pointName}>Mercado teste</Text>
-      <Text style={styles.pointItems}>Lampadas</Text>
+export interface PointResponse {
+  point: Point;
+  items: Item[];
+}
 
-      <View style={styles.address}>
-        <Text style={styles.addressTitle}>Endereço</Text>
-        <Text style={styles.addressContent}>Brasilia, DF</Text>
+const Detail = ({ navigation, route }) => {
+  const { point_id } = route.params;
+  const [pointInfo, setPoint] = useState<PointResponse>({});
+
+  useEffect(() => {
+    api.get(`points/${point_id}`).then((response) => {
+      setPoint(response.data);
+    });
+  }, []);
+
+  async function sendEmail() {
+    await MailComposer.composeAsync({
+      subject: "Interesse na coleta de resíduos",
+      recipients: pointInfo.point.email,
+    });
+  }
+  async function sendWhatsappMessage() {
+    Linking.openURL(
+      `whatsapp://send?text=Tenho interesse na coleta de resíduos&phone=${pointInfo.point.whatsapp}`
+    );
+  }
+
+  return (
+    <>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={20} color="#34cb79" />
+        </TouchableOpacity>
+
+        <Image
+          style={styles.pointImage}
+          source={{
+            uri: pointInfo.point?.image,
+          }}
+        />
+
+        <Text style={styles.pointName}>{pointInfo.point?.name}</Text>
+        <Text style={styles.pointItems}>
+          {pointInfo.items?.map((item) => item.title).join(", ")}
+        </Text>
+
+        <View style={styles.address}>
+          <Text style={styles.addressTitle}>Endereço</Text>
+          <Text style={styles.addressContent}>
+            {pointInfo.point?.city}, {pointInfo.point?.uf}
+          </Text>
+        </View>
       </View>
-    </View>
-    <View style={styles.footer}>
-      <RectButton style={styles.button} onPress={() => {}}>
-        <FontAwesome name="whatsapp" size={20} color="#fff" />
-        <Text style={styles.buttonText}>Whatsapp</Text>
-      </RectButton>
-      <RectButton style={styles.button} onPress={() => {}}>
-        <Icon name="mail" size={20} color="#fff" />
-        <Text style={styles.buttonText}>Email</Text>
-      </RectButton>
-    </View>
-  </>
-);
+      <View style={styles.footer}>
+        <RectButton style={styles.button} onPress={() => {}}>
+          <FontAwesome name="whatsapp" size={20} color="#fff" />
+          <Text style={styles.buttonText}>Whatsapp</Text>
+        </RectButton>
+        <RectButton style={styles.button} onPress={sendEmail}>
+          <Icon name="mail" size={20} color="#fff" />
+          <Text style={styles.buttonText}>Email</Text>
+        </RectButton>
+      </View>
+    </>
+  );
+};
 export default Detail;
