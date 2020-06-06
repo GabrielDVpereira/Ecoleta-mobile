@@ -9,6 +9,7 @@ import api from "../../services/api";
 export interface Point {
   id: number;
   image: string;
+  image_url: string;
   name: string;
   email: string;
   whatsapp: string;
@@ -59,7 +60,7 @@ const Detail = ({ navigation, route }) => {
         <Image
           style={styles.pointImage}
           source={{
-            uri: pointInfo.point?.image,
+            uri: pointInfo.point?.image_url,
           }}
         />
 
